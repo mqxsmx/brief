@@ -1,0 +1,36 @@
+name: run-brief
+
+# 可复用 workflow:跑任意一个 brief。由各 caller workflow 以 cron 触发。
+on:
+  workflow_call:
+    inputs:
+      brief:
+        description: "config.yaml 中的 brief name"
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      brief:
+        description: "config.yaml 中的 brief name"
+        type: string
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Run brief
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          # GITHUB_TOKEN 由 Actions 自动提供,无需手动配置;用于 quality_gate 调 API
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m brief run ${{ inputs.brief }}

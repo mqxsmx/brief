@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 本地依赖(仅本地验证用,生产环境请 pip install -r requirements.txt)
+.deps/
+
+# 本地验证脚本
+_test_render.py
+_check_syntax.py
+
+# 运行时状态(后续跨天去重用)
+state.json
+*.state.json
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 环境变量文件(含 SMTP 授权码等敏感信息,切勿入仓)
+.env
+.env.*
+
+# 日志
+*.log

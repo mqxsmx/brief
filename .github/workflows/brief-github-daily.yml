@@ -1,0 +1,15 @@
+name: brief-github-daily
+
+# caller:每天北京时间约 08:00(UTC 00:00)触发 github-trending-daily。
+# 也可在 Actions 页面手动 Run workflow 测试。
+on:
+  schedule:
+    - cron: "0 0 * * *"          # UTC 00:00 = 北京 08:00
+  workflow_dispatch:
+
+jobs:
+  daily:
+    uses: ./.github/workflows/run-brief.yml
+    with:
+      brief: github-trending-daily
+    secrets: inherit
