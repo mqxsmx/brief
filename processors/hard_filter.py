@@ -1,11 +1,11 @@
-"""第 1 层:硬过滤 —— 剔除确定的水项目。
+﻿"""第 1 层:硬过滤 —— 剔除确定的水项目。
 
 保守原则:只删明确的(空描述 + 关键词黑名单),模糊判断交给后面评分。
 fork / archived 在 quality_gate(有 API 数据)里处理。
 """
 from __future__ import annotations
-from brief.registry import register_processor
-from brief.base import Processor
+from core.registry import register_processor
+from core.base import Processor
 
 # 默认黑名单:资源汇总 / 模板 / 面试 / 教程 类,不算「项目」
 DEFAULT_KEYWORDS = [

@@ -1,15 +1,15 @@
-"""第 2 层:质量门槛 —— 调 GitHub API 补全元数据并卡阈值。
+﻿"""第 2 层:质量门槛 —— 调 GitHub API 补全元数据并卡阈值。
 
 调 GET /repos/{owner}/{repo} 拿 forks/watchers/issues/license/created/pushed/topics;
-通过基本检查后才取 README(省 API 配额)。
+通过基本检查后才取 README(省 API 配额),并存前 N 字符供 ai_filter 使用。
 """
 from __future__ import annotations
 import os
 from datetime import datetime, timezone
 import requests
 
-from brief.registry import register_processor
-from brief.base import Processor
+from core.registry import register_processor
+from core.base import Processor
 
 API = "https://api.github.com/repos/"
 
@@ -18,13 +18,15 @@ API = "https://api.github.com/repos/"
 class QualityGate(Processor):
     def __init__(self, min_forks: int = 5, min_watchers: int = 3,
                  min_readme_chars: int = 200, min_age_days: int = 3,
-                 max_stale_days: int = 365, require_license: bool = False):
+                 max_stale_days: int = 365, require_license: bool = False,
+                 readme_excerpt_chars: int = 1500):
         self.min_forks = min_forks
         self.min_watchers = min_watchers
         self.min_readme_chars = min_readme_chars
         self.min_age_days = min_age_days
         self.max_stale_days = max_stale_days
         self.require_license = require_license
+        self.readme_excerpt_chars = readme_excerpt_chars
         self.token = os.environ.get("GITHUB_TOKEN", "")
         self._info_cache: dict[str, dict | None] = {}
 
@@ -45,12 +47,12 @@ class QualityGate(Processor):
         self._info_cache[name] = info
         return info
 
-    def _readme_len(self, name: str) -> int:
+    def _readme(self, name: str) -> str:
         try:
             r = requests.get(API + name + "/readme", headers=self._headers("application/vnd.github.raw"), timeout=15)
-            return len(r.text) if r.status_code == 200 else 0
+            return r.text if r.status_code == 200 else ""
         except requests.RequestException:
-            return 0
+            return ""
 
     def process(self, projects):
         now = datetime.now(timezone.utc)
@@ -81,9 +83,11 @@ class QualityGate(Processor):
                 p.extra["drop_reason"] = reason
                 continue
 
-            # 通过基本检查才取 README(省配额)
-            p.readme_chars = self._readme_len(p.name)
+            # 通过基本检查才取 README(省配额),并存摘要供 ai_filter 用
+            readme = self._readme(p.name)
+            p.readme_chars = len(readme)
             p.has_readme = p.readme_chars > 0
+            p.readme_excerpt = readme[: self.readme_excerpt_chars]
             if p.readme_chars < self.min_readme_chars:
                 p.extra["drop_reason"] = f"README 过短({p.readme_chars}<{self.min_readme_chars})"
                 continue

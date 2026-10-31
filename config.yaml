@@ -1,56 +1,13 @@
-# Brief 简报清单
-# 每条 brief 自带 schedule / sources / processors / renderer / channels,互不影响。
-# 新增简报 = 复制一段改 name + cron + 链路,零改代码。
+# Brief 公共配置
+# 各 brief 的独立配置在 briefs/<brief-name>/config.yaml,自动继承下方 defaults(brief 同名字段覆盖)。
+# 新增 brief = 在 briefs/ 下建 <name>/ 目录 + config.yaml(+ prompt.md / template.html.j2 / processors/)。
+#
+# 加载逻辑见 core/config.py:load_config —— 读本文件 defaults + 扫描 briefs/*/config.yaml 合并。
 
-briefs:
-  - name: github-trending-weekly
-    title: "GitHub 周报"
-    schedule:
-      cron: "0 0 * * 1"        # 每周一 UTC 00:00 = 北京 08:00 周一
-    sources:
-      - type: github_trending
-        params:
-          since: weekly         # daily | weekly | monthly
-          # language: python    # 取消注释可限定语言
-    processors:
-      - type: hard_filter                              # 关键词/空描述黑名单
-      - type: quality_gate                             # 调 GitHub API 卡质量阈值
-        params:
-          min_forks: 5
-          min_watchers: 3
-          min_readme_chars: 200
-          min_age_days: 3
-          max_stale_days: 365
-      - type: anti_inflate                             # 反刷榜(标记可疑)
-        params:
-          min_fork_star_ratio: 0.008
-          max_today_ratio: 0.5
-          drop_suspect: false                          # 标记降权,不直接删
-      - type: dedupe                                   # 去重
-      - type: score_rank                               # 综合评分取 Top
-        params:
-          top_n: 15
-    renderer:
-      type: html
+defaults:
+  renderer:
+    type: html
+  channels:
+    - type: email
       params:
-        template: templates/email.html.j2
-    channels:
-      - type: email
-        params:
-          subject_prefix: "[Brief]"
-
-  # —— 扩展示例(按需启用):
-  # - name: github-trending-monthly
-  #   title: "GitHub 月报"
-  #   schedule: { cron: "0 0 1 * *" }       # 每月 1 号 北京 08:00
-  #   sources:
-  #     - { type: github_trending, params: { since: monthly } }
-  #   processors:
-  #     - { type: hard_filter }
-  #     - { type: quality_gate, params: { min_forks: 10, min_age_days: 30 } }
-  #     - { type: anti_inflate }
-  #     - { type: dedupe }
-  #     - { type: score_rank, params: { top_n: 30 } }
-  #   renderer: { type: html }
-  #   channels:
-  #     - { type: email, params: { subject_prefix: "[Brief]" } }
+        subject_prefix: "【Brief】"

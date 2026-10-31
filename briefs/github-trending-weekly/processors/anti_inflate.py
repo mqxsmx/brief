@@ -1,12 +1,12 @@
-"""第 3 层:反刷榜 —— 基于 star 与其他指标背离检测可疑膨胀。
+﻿"""第 3 层:反刷榜 —— 基于 star 与其他指标背离检测可疑膨胀。
 
 实现已有数据能算的:fork-star 比、当日增量占比。
 star-history 曲线检测(垂直暴涨=刷榜)留 TODO。
 默认标记可疑(score_rank 据此降权),不直接删 —— 宁可漏不可错。
 """
 from __future__ import annotations
-from brief.registry import register_processor
-from brief.base import Processor
+from core.registry import register_processor
+from core.base import Processor
 
 
 @register_processor("anti_inflate")

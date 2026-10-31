@@ -13,14 +13,36 @@ def _load_plugins():
     """
     import sources.github_trending          # noqa: F401
     import processors.hard_filter           # noqa: F401
-    import processors.quality_gate          # noqa: F401
-    import processors.anti_inflate          # noqa: F401
-    import processors.score_rank            # noqa: F401
     import processors.dedupe                # noqa: F401
     import processors.ai_filter             # noqa: F401
     import renderers.html_renderer          # noqa: F401
     import channels.email_channel           # noqa: F401
     import channels.console_channel         # noqa: F401
+    _load_brief_plugins()
+
+
+def _load_brief_plugins():
+    """加载 briefs/<brief>/processors/ 下的专属 processor(只服务某 brief 的过滤逻辑)。
+
+    通用 processor 由上方 import 显式加载;这里扫描各 brief 目录下的专属 processor,
+    用路径加载(brief 名可含连字符,无需作 Python 包名)。新增 .py 文件自动加载并注册。
+    """
+    import importlib.util
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / "briefs"
+    if not root.exists():
+        return
+    for brief_dir in sorted(root.iterdir()):
+        proc_dir = brief_dir / "processors"
+        if not proc_dir.is_dir():
+            continue
+        for py in sorted(proc_dir.glob("*.py")):
+            if py.name.startswith("_"):
+                continue
+            spec = importlib.util.spec_from_file_location(
+                f"briefs.{brief_dir.name}.processors.{py.stem}", py)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
 
 
 def main(argv=None) -> int:

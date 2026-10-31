@@ -1,8 +1,8 @@
-"""第 4 层:综合评分排序,取 Top N。可疑项降权。"""
+﻿"""第 4 层:综合评分排序,取 Top N。可疑项降权。"""
 from __future__ import annotations
-from brief.registry import register_processor
-from brief.base import Processor
-from brief.models import Project
+from core.registry import register_processor
+from core.base import Processor
+from core.models import Project
 
 
 @register_processor("score_rank")

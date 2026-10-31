@@ -1,0 +1,36 @@
+name: github-trending-weekly
+title: "GitHub Trending 每周推荐"
+schedule:
+  cron: "0 0 * * 1"        # 每周一 UTC 00:00 = 北京 08:00 周一
+sources:
+  - type: github_trending
+    params:
+      since: weekly         # daily | weekly | monthly
+      # language: python    # 取消注释可限定语言
+processors:
+  - type: hard_filter                              # 关键词/空描述黑名单(通用)
+  - type: quality_gate                             # 调 GitHub API 卡质量阈值(本 brief 专属)
+    params:
+      min_forks: 5
+      min_watchers: 3
+      min_readme_chars: 200
+      min_age_days: 3
+      max_stale_days: 365
+  - type: anti_inflate                             # 反刷榜(标记可疑)
+    params:
+      min_fork_star_ratio: 0.008
+      max_today_ratio: 0.5
+      drop_suspect: false                          # 标记降权,不直接删
+  - type: dedupe                                   # 去重(通用)
+  - type: score_rank                               # 综合评分取 Top
+    params:
+      top_n: 15
+  - type: ai_filter                                # LLM 中文精读(简介+亮点+点评,失败降级)
+    # LLM 配置从环境变量读(LLM_API_BASE/LLM_MODEL/LLM_API_KEY);提示词从 prompt_file 加载
+    params:
+      prompt_file: briefs/github-trending-weekly/prompt.md
+renderer:
+  type: html
+  params:
+    template: briefs/github-trending-weekly/template.html.j2
+# channels 继承 config.yaml 的 defaults(【Brief】email),此处省略;如需覆盖可在此写 channels

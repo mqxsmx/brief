@@ -33,4 +33,8 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           # GITHUB_TOKEN 由 Actions 自动提供,无需手动配置;用于 quality_gate 调 API
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python -m brief run ${{ inputs.brief }}
+          # LLM 配置(中文精读);从 Secrets 读,未配置则降级为英文简介
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: python -m core run ${{ inputs.brief }}

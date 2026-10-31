@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>{{ digest.title }}</title></head>
+<body style="margin:0;padding:0;background:#fafbfc;font-family:Georgia,'Times New Roman',serif;color:#1f2328">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafbfc">
+    <tr><td align="center" style="padding:24px 12px">
+      <table cellpadding="0" cellspacing="0" style="width:760px;max-width:760px;background:#ffffff">
+        <!-- 刊头 -->
+        <tr><td style="background:#1f2328;padding:28px 28px 20px 28px">
+          <div style="font-size:12px;color:#d4a017;letter-spacing:3px;font-weight:600">WEEKLY · 每周推荐</div>
+          <div style="font-size:28px;color:#ffffff;font-weight:700;margin-top:6px">{{ digest.title }}</div>
+          <div style="font-size:13px;color:#8b949e;margin-top:6px;font-family:-apple-system,'Segoe UI',sans-serif">{{ digest.date }} · 本周精选 {{ digest.projects|length }} 项</div>
+        </td></tr>
+        <!-- 项目列表(每条统一大卡片) -->
+        <tr><td style="padding:18px 28px">
+          {% for p in digest.projects %}
+          <div style="border-top:3px solid #1f2328;padding-top:16px;padding-bottom:8px;margin-bottom:20px">
+            <div style="font-size:12px;color:#d4a017;letter-spacing:1px;font-weight:600">No.{{ '%02d' % loop.index }}</div>
+            <a href="{{ p.url }}" style="font-size:20px;font-weight:700;color:#1f2328;text-decoration:none">{{ p.name }}</a>
+            <span style="color:#8b949e;font-size:13px;margin-left:8px;font-family:-apple-system,'Segoe UI',sans-serif">{% if p.language %}{{ p.language }} · {% endif %}⭐ {{ p.stars_total }}{% if p.stars_today %} · ▲本周 {{ p.stars_today }}{% endif %} · forks {{ p.forks }}{% if p.pushed_at %} · 更新 {{ p.pushed_at[:10] }}{% endif %}{% if p.license %} · {{ p.license }}{% endif %}</span>
+            <div style="font-size:16px;line-height:1.6;margin:10px 0 8px 0">
+              {% if p.summary_cn %}<strong>{{ p.summary_cn }}</strong>{% else %}{{ p.description }}{% endif %}
+            </div>
+            {% if p.highlights %}
+            <div style="font-size:14px;line-height:1.8;color:#3b4046;font-family:-apple-system,'Segoe UI',sans-serif;margin:8px 0">
+              {% for h in p.highlights %}<div>▸ {{ h }}</div>{% endfor %}
+            </div>
+            {% endif %}
+            {% if p.editor_note %}
+            <div style="font-size:13px;color:#6e7781;font-style:italic;margin:10px 0;border-left:3px solid #d4a017;padding-left:10px">{{ p.editor_note }}</div>
+            {% endif %}
+            {% if p.topics %}
+            <div style="margin-top:8px;font-family:-apple-system,'Segoe UI',sans-serif">
+              {% for t in p.topics[:8] %}<span style="display:inline-block;background:#f6f8fa;color:#1f2328;border-radius:3px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px">{{ t }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if p.extra.get('inflate_flagged') %}
+            <div style="color:#cf222e;font-size:12px;margin-top:8px;background:#ffebe9;padding:5px 8px;border-radius:4px;font-family:-apple-system,'Segoe UI',sans-serif">⚠ 可疑:{{ p.extra.get('inflate_reasons', []) | join('; ') }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </td></tr>
+        <!-- footer -->
+        <tr><td style="padding:16px 28px;border-top:1px solid #e1e4e8">
+          <div style="font-size:12px;color:#8b949e;font-family:-apple-system,'Segoe UI',sans-serif">由 Brief 自动生成</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

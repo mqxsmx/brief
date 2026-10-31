@@ -1,4 +1,4 @@
-"""GitHub Trending 数据源:爬取 trending 页面。
+﻿"""GitHub Trending 数据源:爬取 trending 页面。
 
 注意:GitHub 无官方 Trending API,依赖页面 HTML 结构;
 若页面改版导致解析失效,需更新下方选择器(已用注释标明定位)。
@@ -8,9 +8,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from brief.registry import register_source
-from brief.base import Source
-from brief.models import Project
+from core.registry import register_source
+from core.base import Source
+from core.models import Project
 
 TRENDING_URL = "https://github.com/trending"
 

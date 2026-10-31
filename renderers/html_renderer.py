@@ -1,16 +1,18 @@
-"""HTML 渲染器:用 Jinja2 模板把 Digest 转成 HTML 邮件。"""
+﻿"""HTML 渲染器:用 Jinja2 模板把 Digest 转成 HTML 邮件。"""
 from __future__ import annotations
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from brief.registry import register_renderer
-from brief.base import Renderer
-from brief.models import Digest
+from core.registry import register_renderer
+from core.base import Renderer
+from core.models import Digest
 
 
 @register_renderer("html")
 class HtmlRenderer(Renderer):
-    def __init__(self, template: str = "templates/email.html.j2"):
+    def __init__(self, template: str = ""):
+        if not template:
+            raise ValueError("html renderer 需在 config 的 renderer.params 指定 template 路径")
         tpl = Path(template)
         env = Environment(
             loader=FileSystemLoader(tpl.parent.as_posix()),

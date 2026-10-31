@@ -6,9 +6,10 @@ __pycache__/
 # 本地依赖(仅本地验证用,生产环境请 pip install -r requirements.txt)
 .deps/
 
-# 本地验证脚本
+# 本地验证脚本(临时预览,不入仓)
 _test_render.py
 _check_syntax.py
+_preview*
 
 # 运行时状态(后续跨天去重用)
 state.json

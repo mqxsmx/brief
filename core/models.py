@@ -23,6 +23,9 @@ class Project:
     contributors: int = 0
     source: str = ""
     summary_cn: str = ""
+    highlights: list = field(default_factory=list)        # AI 生成的价值亮点(中文)
+    editor_note: str = ""                                  # AI 生成的编辑点评(一句话)
+    readme_excerpt: str = ""                               # README 前 N 字符(供 AI 用)
     extra: dict = field(default_factory=dict)   # 过滤标记/原因,便于调参
 
     @property

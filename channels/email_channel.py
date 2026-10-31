@@ -1,4 +1,4 @@
-"""邮件渠道:SMTP 发送。
+﻿"""邮件渠道:SMTP 发送。
 
 QQ 邮箱:smtp.qq.com:465(SSL),密码用授权码(非登录密码)。
 缺少 SMTP 环境变量时自动回退为打印到控制台(dry-run),方便本地调试。
@@ -9,8 +9,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from brief.registry import register_channel
-from brief.base import Channel
+from core.registry import register_channel
+from core.base import Channel
 
 
 @register_channel("email")
@@ -24,7 +24,7 @@ class EmailChannel(Channel):
         user = os.environ.get("EMAIL_ADDRESS", "")
         pwd = os.environ.get("EMAIL_PASSWORD", "")
         to = os.environ.get("EMAIL_TO", "")
-        full_subject = f"{self.subject_prefix} {subject}".strip()
+        full_subject = f"{self.subject_prefix}{subject}".strip()
 
         if not (host and user and pwd and to):
             self._dry_run(full_subject, to, content)
