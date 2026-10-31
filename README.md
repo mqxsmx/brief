@@ -100,14 +100,14 @@ LLM 配置**全部从环境变量读**(不写进 config),便于 GitHub Actions �
 | 环境变量 | 说明 | 示例(DeepSeek) |
 |----------|------|------------------|
 | `LLM_API_BASE` | 接口地址 | `https://api.deepseek.com` |
-| `LLM_MODEL` | 模型名 | `deepseek-chat` |
+| `LLM_MODEL` | 模型名 | `deepseek-flash` |
 | `LLM_API_KEY` | API key | `sk-...` |
 
 **换厂商**只需改这三个环境变量(无需单独配「厂商」,`api_base` + `model` 已唯一确定):
 
 | 厂商 | LLM_API_BASE | LLM_MODEL | 获取 key |
 |------|--------------|-----------|---------|
-| DeepSeek(推荐,便宜中文好) | `https://api.deepseek.com` | `deepseek-chat` | platform.deepseek.com |
+| DeepSeek(推荐,便宜中文好) | `https://api.deepseek.com` | `deepseek-flash` | platform.deepseek.com |
 | OpenAI | `https://api.openai.com` | `gpt-4o-mini` | platform.openai.com |
 | 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode` | `qwen-plus` | dashscope.aliyuncs.com |
 | 智谱 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4-flash` | open.bigmodel.cn |
@@ -117,7 +117,7 @@ LLM 配置**全部从环境变量读**(不写进 config),便于 GitHub Actions �
 
 ```powershell
 $env:LLM_API_BASE = "https://api.deepseek.com"
-$env:LLM_MODEL    = "deepseek-chat"
+$env:LLM_MODEL    = "deepseek-flash"
 $env:LLM_API_KEY  = "sk-..."
 python -m core run github-trending-weekly
 ```

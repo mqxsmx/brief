@@ -1,4 +1,4 @@
-﻿"""第 5 层:LLM 中文精读 —— 生成中文简介 + 价值亮点 + 编辑点评。
+"""第 5 层:LLM 中文精读 —— 生成中文简介 + 价值亮点 + 编辑点评。
 
 提示词从 prompt_file 加载(per-brief 可定制,不写死在代码里),{items} 处填入项目数据。
 LLM 配置(LLM_API_BASE / LLM_MODEL / LLM_API_KEY)从环境变量读,便于 GitHub Actions 用 Secrets。
@@ -102,6 +102,11 @@ class AiFilter(Processor):
             "response_format": {"type": "json_object"},
             "temperature": self.temperature,
         }
+        # DeepSeek V4 默认开启思考模式(耗 token、慢,且 temperature 不生效);
+        # 精读不需深度推理,关闭思考以省 token + 加快 + 让 temperature 生效。
+        # 仅对 DeepSeek 传此参数,其他厂商不传(避免 unknown parameter 报错)。
+        if "deepseek" in api_base or "deepseek" in model:
+            payload["thinking"] = {"type": "disabled"}
         url = f"{api_base}/chat/completions"
         r = requests.post(url, headers={
             "Authorization": f"Bearer {key}",
