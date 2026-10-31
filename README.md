@@ -4,7 +4,7 @@
 
 从多个数据源拉取内容 → 过滤垃圾提取精华 → 渲染成简报 → 推送到多个渠道;每个简报可独立周期(日/周/月)。
 
-首个可用链路:**GitHub Trending(每日)→ 过滤链 → HTML 邮件 → SMTP**。
+首个可用链路:**GitHub Trending(每周)→ 过滤链 → HTML 邮件 → SMTP**。
 
 ## 架构
 
@@ -40,7 +40,7 @@ brief/
 
 ```bash
 pip install -r requirements.txt
-python -m brief run github-trending-daily
+python -m brief run github-trending-weekly
 ```
 
 `quality_gate` 会调 GitHub API。匿名调用限额 60 次/小时,建议设置 token 提到 5000 次/小时:
@@ -48,7 +48,7 @@ python -m brief run github-trending-daily
 ```powershell
 # PowerShell
 $env:GITHUB_TOKEN = "你的 GitHub PAT"
-python -m brief run github-trending-daily
+python -m brief run github-trending-weekly
 ```
 
 ## 配置 QQ 邮箱
@@ -64,7 +64,7 @@ $env:EMAIL_PASSWORD = "授权码"
 $env:EMAIL_TO      = "收件邮箱@example.com"
 ```
 
-3. 再次运行即发真实邮件:`python -m brief run github-trending-daily`
+3. 再次运行即发真实邮件:`python -m brief run github-trending-weekly`
 
 ## 部署到 GitHub Actions(public 仓库)
 
@@ -81,8 +81,8 @@ $env:EMAIL_TO      = "收件邮箱@example.com"
 
    > `GITHUB_TOKEN` 由 Actions 自动提供,无需手动配置。
 
-3. 进入 **Actions** 页面 → 选 `brief-github-daily` → `Run workflow` 手动测试一次。
-4. 之后每天北京时间约 08:00 自动发送。
+3. 进入 **Actions** 页面 → 选 `brief-github-weekly` → `Run workflow` 手动测试一次。
+4. 之后每周一北京时间约 08:00 自动发送。
 
 ### cron 时区速查(GitHub 用 UTC,北京 +8)
 
@@ -92,7 +92,7 @@ $env:EMAIL_TO      = "收件邮箱@example.com"
 | 每周一 08:00 | `0 0 * * 1` |
 | 每月 1 号 08:00 | `0 0 1 * *` |
 
-新增周/月简报:复制一个 caller workflow,改 `cron` 和 `brief` 名即可。
+新增日/月简报:复制一个 caller workflow,改 `cron` 和 `brief` 名即可。
 
 ## 过滤链(处理垃圾项目)
 
@@ -128,4 +128,4 @@ $env:EMAIL_TO      = "收件邮箱@example.com"
 - 跨天去重持久化(`processors/dedupe.py`,state.json 或 cache)
 - AI 中文精读(`processors/ai_filter.py`,接 DeepSeek API)
 - 新闻 / 视频数据源、Telegram / Webhook 渠道
-- 周报 / 月报简报
+- 日报 / 月报简报

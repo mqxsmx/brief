@@ -1,0 +1,15 @@
+name: brief-github-weekly
+
+# caller:每周一北京时间约 08:00(UTC 00:00 周一)触发 github-trending-weekly。
+# 也可在 Actions 页面手动 Run workflow 测试。
+on:
+  schedule:
+    - cron: "0 0 * * 1"          # UTC 00:00 周一 = 北京 08:00 周一
+  workflow_dispatch:
+
+jobs:
+  weekly:
+    uses: ./.github/workflows/run-brief.yml
+    with:
+      brief: github-trending-weekly
+    secrets: inherit
