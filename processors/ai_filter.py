@@ -68,6 +68,9 @@ class AiFilter(Processor):
                 p.highlights = hs
             if en:
                 p.editor_note = en
+            cat = (r.get("category") or "").strip()
+            if cat:
+                p.category = cat
         print(f"[ai_filter] 中文精读完成: {filled}/{len(projects)}")
         return projects
 
@@ -81,15 +84,19 @@ class AiFilter(Processor):
             return f.read()
 
     def _item(self, p):
-        excerpt = (p.readme_excerpt or "")[: self.max_readme_chars]
-        return {
-            "name": p.name,
-            "description": p.description,
-            "language": p.language,
-            "topics": p.topics,
-            "stars": p.stars_total,
-            "readme_excerpt": excerpt,
-        }
+        """组装送 LLM 的项目数据(通用:GitHub/HN 共用,非空字段才传)。"""
+        item = {"name": p.name, "url": p.url, "description": p.description}
+        if p.language:
+            item["language"] = p.language
+        if p.topics:
+            item["topics"] = p.topics
+        if p.stars_total:
+            item["stars"] = p.stars_total
+        if p.readme_excerpt:
+            item["readme_excerpt"] = p.readme_excerpt[: self.max_readme_chars]
+        if p.extra:
+            item["extra"] = p.extra
+        return item
 
     def _call_llm(self, api_base, model, key, prompt_template, items):
         # 用 replace 而非 format,避免提示词里的 JSON 示例 { } 被当占位符

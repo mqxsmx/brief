@@ -1,4 +1,4 @@
-"""入口:python -m brief run <brief-name>"""
+"""入口:python -m core run <brief-name>"""
 from __future__ import annotations
 import sys
 
@@ -12,6 +12,7 @@ def _load_plugins():
     新增插件后,在此加一行 import 即可被 config 引用。
     """
     import sources.github_trending          # noqa: F401
+    import sources.hackernews               # noqa: F401
     import processors.hard_filter           # noqa: F401
     import processors.dedupe                # noqa: F401
     import processors.ai_filter             # noqa: F401
@@ -48,7 +49,7 @@ def _load_brief_plugins():
 def main(argv=None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
     if len(argv) < 2 or argv[0] != "run":
-        print("用法: python -m brief run <brief-name>")
+        print("用法: python -m core run <brief-name>")
         print("可用简报见 config.yaml")
         return 1
 

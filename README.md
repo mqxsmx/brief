@@ -10,7 +10,10 @@
 
 从多个数据源拉取内容 → 过滤垃圾提取精华 → 渲染成简报 → 推送到多个渠道;每个简报可独立周期(日/周/月)。
 
-首个可用链路:**GitHub Trending(每周)→ 多层过滤 → LLM 中文精读 → 杂志感 HTML 邮件 → SMTP**。
+已有链路:
+
+- **GitHub Trending 周报**:每周一发,Trending 周榜 → 多层过滤(反刷榜)→ LLM 中文精读 → 杂志感邮件
+- **Hacker News 日报**:每天发,HN 热门 → points 评分取 Top 20 → LLM 中文解读 + 类别标签 → 按类别分组邮件
 
 ## ✨ 特性
 
@@ -20,6 +23,7 @@
 - 🤖 **LLM 中文精读**:任意 OpenAI 兼容接口生成简介 + 价值亮点 + 编辑点评,凭据走环境变量,fork 即用
 - 🛡️ **反刷榜**:fork-star 比 + 增量占比检测可疑项目,标记降权而非误删
 - 🎨 **杂志感邮件**:统一大卡片、深色刊头、金色点缀,每条项目都是头条式呈现
+- 🗂️ **多源 + 类别分组**:GitHub 周报(杂志风)、Hacker News 日报(HN 橙 + 按类别分组);LLM 自动打类别标签
 - 🐛 **优雅降级**:缺 SMTP/LLM 凭据自动降级(控制台/英文),永远能跑
 
 ## 📐 架构
@@ -44,11 +48,16 @@ brief/
 ├── renderers/                # 通用渲染器(html)
 ├── channels/                 # 通用投递渠道(email/console)
 ├── briefs/                   # per-brief 专属资源(配置/提示词/模板/专属processor)
-│   └── github-trending-weekly/
-│       ├── config.yaml       # 本 brief 配置(继承 config.yaml 的 defaults)
-│       ├── prompt.md         # LLM 提示词
-│       ├── template.html.j2  # 专属邮件模板
-│       └── processors/       # 本 brief 专属(quality_gate/anti_inflate/score_rank)
+│   ├── github-trending-weekly/
+│   │   ├── config.yaml       # 本 brief 配置(继承 config.yaml 的 defaults)
+│   │   ├── prompt.md         # LLM 提示词
+│   │   ├── template.html.j2  # 专属邮件模板
+│   │   └── processors/       # 本 brief 专属(quality_gate/anti_inflate/score_rank)
+│   └── hackernews-daily/
+│       ├── config.yaml       # HN 日报配置
+│       ├── prompt.md         # LLM 提示词(中文解读 + 类别标签)
+│       ├── template.html.j2  # 按类别分组邮件模板(HN 橙)
+│       └── processors/       # 本 brief 专属(hn_score)
 ├── config.yaml               # 公共配置(defaults:默认 renderer/channels)
 └── requirements.txt
 ```
@@ -65,7 +74,8 @@ brief/
 
 ```bash
 pip install -r requirements.txt
-python -m core run github-trending-weekly
+python -m core run github-trending-weekly    # GitHub 周报(需 GitHub token 提额)
+python -m core run hackernews-daily          # Hacker News 日报(HN API 公开,无需 token)
 ```
 
 `quality_gate` 会调 GitHub API。匿名调用限额 60 次/小时,建议设置 token 提到 5000 次/小时:
@@ -142,8 +152,8 @@ python -m core run github-trending-weekly
 
    > `GITHUB_TOKEN` 由 Actions 自动提供,无需手动配置。
 
-3. 进入 **Actions** 页面 → 选 `brief-github-weekly` → `Run workflow` 手动测试一次。
-4. 之后每周一北京时间约 08:00 自动发送。
+3. 进入 **Actions** 页面 → 选 `brief-github-weekly`(周报)或 `brief-hn-daily`(日报)→ `Run workflow` 手动测试一次。
+4. 之后 GitHub 周报每周一、HN 日报每天,北京时间约 08:00 自动发送。
 
 ### ⏰ cron 时区速查(GitHub 用 UTC,北京 +8)
 
@@ -173,6 +183,19 @@ GitHub Trending(~25项)
 
 > 通用 processor(`hard_filter`/`dedupe`/`ai_filter`)放 `processors/`,跨 brief 复用;GitHub 指标专属(`quality_gate`/`anti_inflate`/`score_rank`)放 `briefs/<brief>/processors/`。
 
+### HN 日报过滤链
+
+```
+Hacker News front_page(近 24h,points>50)
+   ├─ dedupe      去重                          [通用]
+   ├─ hn_score    points+comments 评分取 Top 20  [本 brief 专属]
+   └─ ai_filter   LLM 中文解读 + 打类别标签       [通用]
+   ▼
+按类别分组渲染(HN 橙)→ 发邮件
+```
+
+类别由 LLM 从「技术 / AI / 创业 / 安全 / 开源 / 科学 / 讨论」中选;无外链的 Ask/Show HN 跳 HN 讨论页。
+
 ## 🧩 扩展指南
 
 | 想加 | 做法 |
@@ -196,9 +219,9 @@ GitHub Trending(~25项)
 
 - [ ] 反刷榜 star-history 曲线检测(`briefs/.../processors/anti_inflate.py`)
 - [ ] 跨天去重持久化(通用 `processors/dedupe.py`,state.json 或 cache)
-- [ ] 新闻 / 视频数据源(`sources/hackernews.py` 等)
+- [x] Hacker News 日报数据源(`sources/hackernews.py`)+ 类别分组邮件
 - [ ] Telegram / Webhook 渠道(`channels/telegram.py` 等)
-- [ ] 日报 / 月报简报
+- [ ] 月报简报
 
 ## 📄 License
 

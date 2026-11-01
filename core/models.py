@@ -25,6 +25,7 @@ class Project:
     summary_cn: str = ""
     highlights: list = field(default_factory=list)        # AI 生成的价值亮点(中文)
     editor_note: str = ""                                  # AI 生成的编辑点评(一句话)
+    category: str = ""                                     # AI 打的类别标签(HN 日报用,GitHub 留空)
     readme_excerpt: str = ""                               # README 前 N 字符(供 AI 用)
     extra: dict = field(default_factory=dict)   # 过滤标记/原因,便于调参
 
