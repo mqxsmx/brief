@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head><meta charset="utf-8"><title>{{ digest.title }}</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ digest.title }}</title>
+<style>
+  /* 响应式:小屏缩小内边距和字号(行内样式优先,用 !important 覆盖) */
+  @media (max-width: 600px) {
+    .masthead { padding: 20px 16px 14px 16px !important; }
+    .masthead-title { font-size: 22px !important; }
+    .body-cell { padding: 14px 16px !important; }
+    .card-name { font-size: 17px !important; }
+    .card-summary { font-size: 15px !important; }
+    .footer-cell { padding: 12px 16px !important; }
+  }
+</style>
+</head></head>
 <body style="margin:0;padding:0;background:#fafbfc;font-family:Georgia,'Times New Roman',serif;color:#1f2328">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafbfc">
     <tr><td align="center" style="padding:24px 12px">
-      <table cellpadding="0" cellspacing="0" style="width:760px;max-width:760px;background:#ffffff">
+      <table cellpadding="0" cellspacing="0" style="width:100%;max-width:960px;background:#ffffff">
         <!-- 刊头 -->
-        <tr><td style="background:#1f2328;padding:28px 28px 20px 28px">
+        <tr><td class="masthead" style="background:#1f2328;padding:28px 28px 20px 28px">
           <div style="font-size:12px;color:#d4a017;letter-spacing:3px;font-weight:600">WEEKLY · 每周推荐</div>
-          <div style="font-size:28px;color:#ffffff;font-weight:700;margin-top:6px">{{ digest.title }}</div>
+          <div class="masthead-title" style="font-size:28px;color:#ffffff;font-weight:700;margin-top:6px">{{ digest.title }}</div>
           <div style="font-size:13px;color:#8b949e;margin-top:6px;font-family:-apple-system,'Segoe UI',sans-serif">{{ digest.date }} · 本周精选 {{ digest.projects|length }} 项</div>
         </td></tr>
         <!-- 项目列表(每条统一大卡片) -->
-        <tr><td style="padding:18px 28px">
+        <tr><td class="body-cell" style="padding:18px 28px">
           {% for p in digest.projects %}
           <div style="border-top:3px solid #1f2328;padding-top:16px;padding-bottom:8px;margin-bottom:20px">
             <div style="font-size:12px;color:#d4a017;letter-spacing:1px;font-weight:600">No.{{ '%02d' % loop.index }}</div>
-            <a href="{{ p.url }}" style="font-size:20px;font-weight:700;color:#1f2328;text-decoration:none">{{ p.name }}</a>
+            <a href="{{ p.url }}" class="card-name" style="font-size:20px;font-weight:700;color:#1f2328;text-decoration:none">{{ p.name }}</a>
             <span style="color:#8b949e;font-size:13px;margin-left:8px;font-family:-apple-system,'Segoe UI',sans-serif">{% if p.language %}{{ p.language }} · {% endif %}⭐ {{ p.stars_total }}{% if p.stars_today %} · ▲本周 {{ p.stars_today }}{% endif %} · forks {{ p.forks }}{% if p.pushed_at %} · 更新 {{ p.pushed_at[:10] }}{% endif %}{% if p.license %} · {{ p.license }}{% endif %}</span>
-            <div style="font-size:16px;line-height:1.6;margin:10px 0 8px 0">
+            <div class="card-summary" style="font-size:16px;line-height:1.6;margin:10px 0 8px 0">
               {% if p.summary_cn %}<strong>{{ p.summary_cn }}</strong>{% else %}{{ p.description }}{% endif %}
             </div>
             {% if p.highlights %}
@@ -41,7 +53,7 @@
           {% endfor %}
         </td></tr>
         <!-- footer -->
-        <tr><td style="padding:16px 28px;border-top:1px solid #e1e4e8">
+        <tr><td class="footer-cell" style="padding:16px 28px;border-top:1px solid #e1e4e8">
           <div style="font-size:12px;color:#8b949e;font-family:-apple-system,'Segoe UI',sans-serif">由 Brief 自动生成</div>
         </td></tr>
       </table>
