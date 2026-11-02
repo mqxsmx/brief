@@ -1,9 +1,9 @@
 name: brief-producthunt-daily
 
-# caller:每天北京时间约 08:00(UTC 00:00)触发 producthunt-daily。
+# caller:每天北京时间约 10:00(UTC 02:00)触发 producthunt-daily(与 HN/arXiv 错开)。
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 2 * * *"
   workflow_dispatch:
 
 jobs:
