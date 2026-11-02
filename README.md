@@ -8,7 +8,11 @@
 ![Push](https://img.shields.io/badge/Push-SMTP%20Email-yellow)
 ![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF)
 
-从多个数据源拉取内容 → 过滤垃圾提取精华 → 渲染成简报 → 推送到多个渠道;每个简报可独立周期(日/周/月)。
+> 🚀 **零服务器、零运维**:全部跑在 GitHub Actions 上 —— fork 本仓库 → 配好邮箱和模型的 Secrets → 每天定时自动发邮件到你邮箱。**不用买服务器、不用长期挂机、不用部署 cron**,public 仓库 Actions 完全免费。
+
+> 🍴 **fork 即用**:改改 `briefs/<brief>/` 下的配置 / 提示词 / 模板,就是你自己专属的每日简报;LLM 凭据走环境变量,fork 后无需改代码。
+
+从多个数据源拉取内容 → 过滤垃圾提取精华 → LLM 中文精读 → 渲染成简报 → 定时推送到邮箱;每个简报可独立周期(日/周/月),GitHub Actions 托管,零服务器。
 
 已有链路:
 
@@ -78,25 +82,44 @@ brief/
 | `sources/` `processors/` `renderers/` `channels/` | 通用插件 | 跨 brief 复用 |
 | `briefs/<brief>/` | per-brief 资源(配置/提示词/模板/专属processor) | 只服务该 brief |
 
-## 🚀 快速开始(本地 dry-run)
+## 🚀 快速开始(fork 即用,推荐)
 
-无需配置邮箱即可跑,邮件内容会**打印到控制台**:
+3 步上手,全程在 GitHub 上完成,**无需本地环境、无需服务器**:
+
+**1. fork 本仓库**到你自己的 GitHub 账号(public 仓库 Actions 免费)。
+
+**2. 配置 Secrets**:仓库 **Settings → Secrets and variables → Actions** 添加:
+
+   | Secret | 值 | 必填 |
+   |--------|----|------|
+   | `SMTP_HOST` | `smtp.qq.com` | ✅ |
+   | `SMTP_PORT` | `465` | ✅ |
+   | `EMAIL_ADDRESS` | 你的 QQ 邮箱 | ✅ |
+   | `EMAIL_PASSWORD` | 邮箱授权码(非登录密码) | ✅ |
+   | `EMAIL_TO` | 收件邮箱 | ✅ |
+   | `LLM_API_BASE` | LLM 接口地址(如 `https://api.deepseek.com`) | 可选(不配则简介为英文) |
+   | `LLM_MODEL` | LLM 模型名(如 `deepseek-flash`) | 可选 |
+   | `LLM_API_KEY` | LLM key | 可选 |
+
+   > `GITHUB_TOKEN` 由 Actions 自动提供,无需手动配置。GitHub Trending 周报的 `quality_gate` 会用它调 GitHub API(已自动提额到 5000 次/小时)。
+
+**3. 手动触发一次测试**:进入 **Actions** 页面 → 选对应 caller(`brief-github-weekly` 周报 / `brief-hn-daily` / `brief-arxiv-daily` / `brief-producthunt-daily` 日报)→ `Run workflow`。几分钟后邮件到邮箱 ✅
+
+之后按各自 cron 自动发(见下「发送时间表」)。想改发送时间 / 内容 / 样式,直接改 `briefs/<brief>/` 下的文件,提交即生效。
+
+### 🖥️ 本地运行(可选,开发/调试用)
+
+想本地先跑一遍看效果(邮件内容打印到控制台,不配 SMTP 不发真邮件):
 
 ```bash
 pip install -r requirements.txt
-python -m core run github-trending-weekly    # GitHub 周报(需 GitHub token 提额)
-python -m core run hackernews-daily          # Hacker News 日报(无需 token)
+python -m core run hackernews-daily          # HN 日报(无需 token)
 python -m core run arxiv-daily               # arXiv 论文日报(无需 token)
 python -m core run producthunt-daily         # Product Hunt 新品日报(无需 token)
+python -m core run github-trending-weekly    # GitHub 周报(建议设 GITHUB_TOKEN 提额)
 ```
 
-`quality_gate` 会调 GitHub API。匿名调用限额 60 次/小时,建议设置 token 提到 5000 次/小时:
-
-```powershell
-# PowerShell
-$env:GITHUB_TOKEN = "你的 GitHub PAT"
-python -m core run github-trending-weekly
-```
+邮箱 / LLM 配置本地用环境变量(与上面 Secrets 同名),见下两节;配齐即发真邮件。
 
 ## 🔧 配置 QQ 邮箱
 
@@ -146,28 +169,18 @@ python -m core run github-trending-weekly
 
 **提示词可定制**:每个 brief 的提示词在 `briefs/<brief>/prompt.md`,改这个文件即可调整解读风格/侧重(如技术选型/趋势解读/生态适用),不用改代码。brief config 里 `ai_filter` 的 `prompt_file` 指向它,`{items}` 处自动填入项目数据。
 
-## 🚢 部署到 GitHub Actions(public 仓库)
+## ⏰ 发送时间表 & cron 速查
 
-1. 将本项目推送到 GitHub **public** 仓库(Actions 完全免费)。
-2. 仓库 **Settings → Secrets and variables → Actions** 添加:
+四个 brief 已错开,邮件不会扎堆(cron 在 caller workflow + 各 brief config):
 
-   | Secret | 值 |
-   |--------|----|
-   | `SMTP_HOST` | `smtp.qq.com` |
-   | `SMTP_PORT` | `465` |
-   | `EMAIL_ADDRESS` | 你的 QQ 邮箱 |
-   | `EMAIL_PASSWORD` | 授权码 |
-   | `EMAIL_TO` | 收件邮箱 |
-   | `LLM_API_BASE` | LLM 接口地址(可选,不配则简介为英文) |
-   | `LLM_MODEL` | LLM 模型名(可选) |
-   | `LLM_API_KEY` | LLM key(可选) |
+| Brief | 北京时间 | cron |
+|-------|---------|------|
+| Hacker News 日报 | 每天 08:00 | `0 0 * * *` |
+| arXiv 论文日报 | 每天 09:00 | `0 1 * * *` |
+| Product Hunt 新品日报 | 每天 10:00 | `0 2 * * *` |
+| GitHub Trending 周报 | 每周一 08:00 | `0 0 * * 1` |
 
-   > `GITHUB_TOKEN` 由 Actions 自动提供,无需手动配置。
-
-3. 进入 **Actions** 页面 → 选对应 caller(`brief-github-weekly` 周报 / `brief-hn-daily` / `brief-arxiv-daily` / `brief-producthunt-daily` 日报)→ `Run workflow` 手动测试一次。
-4. 之后 GitHub 周报每周一、其余三个日报每天,北京时间约 08:00 自动发送。
-
-### ⏰ cron 时区速查(GitHub 用 UTC,北京 +8)
+GitHub Actions `schedule` 用 UTC(北京 +8),常用时段速查:
 
 | 触发时间(北京) | cron |
 |------------------|------|
@@ -175,7 +188,7 @@ python -m core run github-trending-weekly
 | 每周一 08:00 | `0 0 * * 1` |
 | 每月 1 号 08:00 | `0 0 1 * *` |
 
-新增日/月简报:复制一个 caller workflow,改 `cron` 和 `brief` 名即可。
+新增/改时段简报:复制一个 caller workflow(`.github/workflows/brief-xxx-daily.yml`),改 `cron` 和 `brief` 名即可。
 
 ## 🔍 过滤链(以 github-trending-weekly 为例)
 
