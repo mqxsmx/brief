@@ -1,0 +1,19 @@
+name: arxiv-daily
+title: "arXiv AI 论文日报"
+schedule:
+  cron: "0 0 * * *"          # 每天 UTC 00:00 = 北京 08:00
+sources:
+  - type: arxiv
+    params:
+      categories: "cs.AI,cs.LG,cs.CL"   # AI / 机器学习 / NLP
+      max_results: 20                     # 取最新 20 篇
+processors:
+  - type: dedupe
+  - type: ai_filter                       # LLM 中文解读摘要 + 打类别标签
+    params:
+      prompt_file: briefs/arxiv-daily/prompt.md
+renderer:
+  type: html
+  params:
+    template: briefs/arxiv-daily/template.html.j2
+# channels 继承 config.yaml defaults(【Brief】email)

@@ -1,0 +1,19 @@
+name: producthunt-daily
+title: "Product Hunt 每日新品"
+schedule:
+  cron: "0 0 * * *"          # 每天 UTC 00:00 = 北京 08:00
+sources:
+  - type: producthunt
+    params:
+      window_hours: 24
+      top_n: 20
+processors:
+  - type: dedupe
+  - type: ai_filter                       # LLM 中文解读产品 + 打类别标签
+    params:
+      prompt_file: briefs/producthunt-daily/prompt.md
+renderer:
+  type: html
+  params:
+    template: briefs/producthunt-daily/template.html.j2
+# channels 继承 config.yaml defaults(【Brief】email)

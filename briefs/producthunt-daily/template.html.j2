@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ digest.title }}</title>
+<style>
+  @media (max-width: 600px) {
+    .masthead { padding: 20px 16px 14px 16px !important; }
+    .masthead-title { font-size: 22px !important; }
+    .body-cell { padding: 14px 16px !important; }
+    .card-title { font-size: 16px !important; }
+    .footer-cell { padding: 12px 16px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#fff5f3;font-family:Georgia,'Times New Roman',serif;color:#2d2d2d">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff5f3">
+    <tr><td align="center" style="padding:24px 12px">
+      <table cellpadding="0" cellspacing="0" style="width:100%;max-width:960px;background:#ffffff">
+        <tr><td class="masthead" style="background:#da552f;padding:28px 28px 20px 28px">
+          <div style="font-size:12px;color:#ffd9cc;letter-spacing:3px;font-weight:600">DAILY · 每日新品</div>
+          <div class="masthead-title" style="font-size:28px;color:#ffffff;font-weight:700;margin-top:6px">{{ digest.title }}</div>
+          <div style="font-size:13px;color:#ffe5dc;margin-top:6px;font-family:-apple-system,'Segoe UI',sans-serif">{{ digest.date }} · 本日精选 {{ digest.projects|length }} 款</div>
+        </td></tr>
+        <tr><td class="body-cell" style="padding:18px 28px">
+          {% for cat, items in digest.projects | groupby('category') %}
+          <div style="margin-bottom:22px">
+            <div style="font-size:15px;color:#da552f;font-weight:700;border-bottom:2px solid #da552f;padding-bottom:6px;margin-bottom:12px;font-family:-apple-system,'Segoe UI',sans-serif">{{ cat or '其他' }} · {{ items|length }} 款</div>
+            {% for p in items %}
+            <div style="border-top:1px solid #f0e0dc;padding-top:12px;padding-bottom:8px;margin-bottom:14px">
+              <a href="{{ p.url }}" class="card-title" style="font-size:17px;font-weight:700;color:#2d2d2d;text-decoration:none">{{ p.name }}</a>
+              <div style="color:#a08580;font-size:12px;margin-top:4px;font-family:-apple-system,'Segoe UI',sans-serif">{% if p.extra.tagline %}{{ p.extra.tagline }}{% endif %}{% if p.extra.author %} · by {{ p.extra.author }}{% endif %}</div>
+              <div style="font-size:15px;line-height:1.6;margin:8px 0">
+                {% if p.summary_cn %}<strong>{{ p.summary_cn }}</strong>{% else %}{{ p.description }}{% endif %}
+              </div>
+              {% if p.editor_note %}
+              <div style="font-size:13px;color:#7d6a66;font-style:italic;margin:8px 0;border-left:3px solid #da552f;padding-left:10px">{{ p.editor_note }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </td></tr>
+        <tr><td class="footer-cell" style="padding:16px 28px;border-top:1px solid #f0e0dc">
+          <div style="font-size:12px;color:#a08580;font-family:-apple-system,'Segoe UI',sans-serif">由 Brief 自动生成 · 数据来源 Product Hunt</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

@@ -13,6 +13,8 @@ def _load_plugins():
     """
     import sources.github_trending          # noqa: F401
     import sources.hackernews               # noqa: F401
+    import sources.arxiv                    # noqa: F401
+    import sources.producthunt              # noqa: F401
     import processors.hard_filter           # noqa: F401
     import processors.dedupe                # noqa: F401
     import processors.ai_filter             # noqa: F401

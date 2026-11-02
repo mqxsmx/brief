@@ -14,6 +14,8 @@
 
 - **GitHub Trending 周报**:每周一发,Trending 周榜 → 多层过滤(反刷榜)→ LLM 中文精读 → 杂志感邮件
 - **Hacker News 日报**:每天发,HN 热门 → points 评分取 Top 20 → LLM 中文解读 + 类别标签 → 按类别分组邮件
+- **arXiv AI 论文日报**:每天发,cs.AI/LG/CL 最新论文 → LLM 中文解读摘要 + 打类别 → 按类别分组邮件(学术蓝)
+- **Product Hunt 新品日报**:每天发,PH 新品 → LLM 中文解读产品 + 打类别 → 按类别分组邮件(PH 红)
 
 ## ✨ 特性
 
@@ -23,7 +25,7 @@
 - 🤖 **LLM 中文精读**:任意 OpenAI 兼容接口生成简介 + 价值亮点 + 编辑点评,凭据走环境变量,fork 即用
 - 🛡️ **反刷榜**:fork-star 比 + 增量占比检测可疑项目,标记降权而非误删
 - 🎨 **杂志感邮件**:统一大卡片、深色刊头、金色点缀,每条项目都是头条式呈现
-- 🗂️ **多源 + 类别分组**:GitHub 周报(杂志风)、Hacker News 日报(HN 橙 + 按类别分组);LLM 自动打类别标签
+- 🗂️ **多源 + 类别分组**:GitHub 周报(杂志风)、HN 日报(橙)、arXiv 论文日报(学术蓝)、Product Hunt 新品日报(红);LLM 自动打类别标签按类别分组
 - 🐛 **优雅降级**:缺 SMTP/LLM 凭据自动降级(控制台/英文),永远能跑
 
 ## 📐 架构
@@ -53,11 +55,19 @@ brief/
 │   │   ├── prompt.md         # LLM 提示词
 │   │   ├── template.html.j2  # 专属邮件模板
 │   │   └── processors/       # 本 brief 专属(quality_gate/anti_inflate/score_rank)
-│   └── hackernews-daily/
-│       ├── config.yaml       # HN 日报配置
-│       ├── prompt.md         # LLM 提示词(中文解读 + 类别标签)
-│       ├── template.html.j2  # 按类别分组邮件模板(HN 橙)
-│       └── processors/       # 本 brief 专属(hn_score)
+│   ├── hackernews-daily/
+│   │   ├── config.yaml       # HN 日报配置
+│   │   ├── prompt.md         # LLM 提示词(中文解读 + 类别标签)
+│   │   ├── template.html.j2  # 按类别分组邮件模板(HN 橙)
+│   │   └── processors/       # 本 brief 专属(hn_score)
+│   ├── arxiv-daily/
+│   │   ├── config.yaml       # arXiv 论文日报配置
+│   │   ├── prompt.md         # LLM 提示词(解读摘要 + 类别)
+│   │   └── template.html.j2  # 按类别分组邮件模板(学术蓝)
+│   └── producthunt-daily/
+│       ├── config.yaml       # Product Hunt 新品日报配置
+│       ├── prompt.md         # LLM 提示词(解读产品 + 类别)
+│       └── template.html.j2  # 按类别分组邮件模板(PH 红)
 ├── config.yaml               # 公共配置(defaults:默认 renderer/channels)
 └── requirements.txt
 ```
@@ -75,7 +85,9 @@ brief/
 ```bash
 pip install -r requirements.txt
 python -m core run github-trending-weekly    # GitHub 周报(需 GitHub token 提额)
-python -m core run hackernews-daily          # Hacker News 日报(HN API 公开,无需 token)
+python -m core run hackernews-daily          # Hacker News 日报(无需 token)
+python -m core run arxiv-daily               # arXiv 论文日报(无需 token)
+python -m core run producthunt-daily         # Product Hunt 新品日报(无需 token)
 ```
 
 `quality_gate` 会调 GitHub API。匿名调用限额 60 次/小时,建议设置 token 提到 5000 次/小时:
@@ -152,8 +164,8 @@ python -m core run github-trending-weekly
 
    > `GITHUB_TOKEN` 由 Actions 自动提供,无需手动配置。
 
-3. 进入 **Actions** 页面 → 选 `brief-github-weekly`(周报)或 `brief-hn-daily`(日报)→ `Run workflow` 手动测试一次。
-4. 之后 GitHub 周报每周一、HN 日报每天,北京时间约 08:00 自动发送。
+3. 进入 **Actions** 页面 → 选对应 caller(`brief-github-weekly` 周报 / `brief-hn-daily` / `brief-arxiv-daily` / `brief-producthunt-daily` 日报)→ `Run workflow` 手动测试一次。
+4. 之后 GitHub 周报每周一、其余三个日报每天,北京时间约 08:00 自动发送。
 
 ### ⏰ cron 时区速查(GitHub 用 UTC,北京 +8)
 
@@ -196,6 +208,18 @@ Hacker News front_page(近 24h,points>50)
 
 类别由 LLM 从「技术 / AI / 创业 / 安全 / 开源 / 科学 / 讨论」中选;无外链的 Ask/Show HN 跳 HN 讨论页。
 
+### arXiv / Product Hunt 日报过滤链
+
+```
+arXiv(cs.AI/LG/CL 最新 20 篇) / Product Hunt(近 24h 新品 20 款)
+   ├─ dedupe      去重                          [通用]
+   └─ ai_filter   LLM 中文解读 + 打类别标签       [通用]
+   ▼
+按类别分组渲染(学术蓝 / PH 红)→ 发邮件
+```
+
+arXiv 类别:LLM / Agent / 视觉CV / 语言NLP / 强化学习 / 多模态 / 系统infra / 理论;PH 类别:AI 应用 / 开发者工具 / 生产力 / 设计创意 / 创业SaaS / 硬件设备。两者源 API 均免费无 token(arXiv Atom API、PH Atom feed)。
+
 ## 🧩 扩展指南
 
 | 想加 | 做法 |
@@ -220,6 +244,7 @@ Hacker News front_page(近 24h,points>50)
 - [ ] 反刷榜 star-history 曲线检测(`briefs/.../processors/anti_inflate.py`)
 - [ ] 跨天去重持久化(通用 `processors/dedupe.py`,state.json 或 cache)
 - [x] Hacker News 日报数据源(`sources/hackernews.py`)+ 类别分组邮件
+- [x] arXiv 论文日报(`sources/arxiv.py`)+ Product Hunt 新品(`sources/producthunt.py`)
 - [ ] Telegram / Webhook 渠道(`channels/telegram.py` 等)
 - [ ] 月报简报
 
