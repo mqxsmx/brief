@@ -1,10 +1,10 @@
 name: brief-producthunt-daily
 
-# caller:每天北京时间约 10:00(UTC 02:00)触发 producthunt-daily(与 HN/arXiv 错开)。
+# caller:producthunt-daily。⏸ 已暂停自动发送(最近不需要);恢复把 on.schedule 取消注释即可。
 on:
-  schedule:
-    - cron: "0 2 * * *"
   workflow_dispatch:
+  # schedule:
+  #   - cron: "0 2 * * *"          # UTC 02:00 = 北京 10:00
 
 jobs:
   daily:

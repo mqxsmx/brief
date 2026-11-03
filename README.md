@@ -171,14 +171,14 @@ python -m core run github-trending-weekly
 
 ## ⏰ 发送时间表 & cron 速查
 
-四个 brief 已错开,邮件不会扎堆(cron 在 caller workflow + 各 brief config):
+当前发送状态(cron 在 caller workflow;暂停 = 注释掉 caller 的 `on.schedule`,代码/brief 保留,恢复取消注释即可):
 
-| Brief | 北京时间 | cron |
-|-------|---------|------|
-| Hacker News 日报 | 每天 08:00 | `0 0 * * *` |
-| arXiv 论文日报 | 每天 09:00 | `0 1 * * *` |
-| Product Hunt 新品日报 | 每天 10:00 | `0 2 * * *` |
-| GitHub Trending 周报 | 每周一 08:00 | `0 0 * * 1` |
+| Brief | 状态 | cron(恢复时) |
+|-------|------|--------------|
+| GitHub Trending 周报 | ✅ 发送中 | 每周一 08:00 `0 0 * * 1` |
+| Hacker News 日报 | ⏸ 已暂停 | 每天 08:00 `0 0 * * *` |
+| arXiv 论文日报 | ⏸ 已暂停 | 每天 09:00 `0 1 * * *` |
+| Product Hunt 新品日报 | ⏸ 已暂停 | 每天 10:00 `0 2 * * *` |
 
 GitHub Actions `schedule` 用 UTC(北京 +8),常用时段速查:
 

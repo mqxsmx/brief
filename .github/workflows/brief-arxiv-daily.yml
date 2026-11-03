@@ -1,10 +1,10 @@
 name: brief-arxiv-daily
 
-# caller:每天北京时间约 09:00(UTC 01:00)触发 arxiv-daily(与 HN/PH 错开)。
+# caller:arxiv-daily。⏸ 已暂停自动发送(最近不需要);恢复把 on.schedule 取消注释即可。
 on:
-  schedule:
-    - cron: "0 1 * * *"
   workflow_dispatch:
+  # schedule:
+  #   - cron: "0 1 * * *"          # UTC 01:00 = 北京 09:00
 
 jobs:
   daily:
