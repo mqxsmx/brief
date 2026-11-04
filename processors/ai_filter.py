@@ -48,12 +48,16 @@ class AiFilter(Processor):
             print(f"[ai_filter] LLM 调用失败,降级为英文简介: {e}")
             return projects
 
-        by_name = {r.get("name", ""): r for r in results}
+        def _norm(n):
+            return (n or "").strip().lower()
+        by_name = {_norm(r.get("name", "")): r for r in results}
         filled = 0
+        matched = 0
         for p in projects:
-            r = by_name.get(p.name)
+            r = by_name.get(_norm(p.name))
             if not r:
                 continue
+            matched += 1
             s = (r.get("summary_cn") or "").strip()
             hs = r.get("highlights") or []
             if isinstance(hs, list):
@@ -71,7 +75,12 @@ class AiFilter(Processor):
             cat = (r.get("category") or "").strip()
             if cat:
                 p.category = cat
-        print(f"[ai_filter] 中文精读完成: {filled}/{len(projects)}")
+        print(f"[ai_filter] 中文精读完成: {filled}/{len(projects)}(LLM 返回 {len(results)} 条,匹配 {matched})")
+        if matched < len(projects):
+            llm_names = {_norm(r.get("name", "")) for r in results}
+            missing = [p.name for p in projects if _norm(p.name) not in llm_names]
+            if missing:
+                print(f"[ai_filter] 未匹配项目(前 5): {missing[:5]}")
         return projects
 
     def _load_prompt(self) -> str:
@@ -122,5 +131,12 @@ class AiFilter(Processor):
         r.raise_for_status()
         data = r.json()
         content = data["choices"][0]["message"]["content"]
-        parsed = json.loads(content)
-        return parsed.get("results", []) if isinstance(parsed, dict) else []
+        try:
+            parsed = json.loads(content)
+        except json.JSONDecodeError as e:
+            print(f"[ai_filter] LLM 返回非 JSON(parse 失败): {e}")
+            print(f"[ai_filter] content 片段(前 500): {content[:500]}")
+            raise
+        results = parsed.get("results", []) if isinstance(parsed, dict) else []
+        print(f"[ai_filter] LLM 返回 {len(results)} 条解读")
+        return results

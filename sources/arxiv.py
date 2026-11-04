@@ -11,7 +11,7 @@ from core.registry import register_source
 from core.base import Source
 from core.models import Project
 
-ARXIV_API = "http://export.arxiv.org/api/query"
+ARXIV_API = "https://export.arxiv.org/api/query"
 ARXIV_NS = {"atom": "http://www.w3.org/2005/Atom"}
 
 
@@ -34,14 +34,20 @@ class Arxiv(Source):
             "sortOrder": "descending",
             "max_results": str(self.max_results),
         }
-        r = requests.get(
-            ARXIV_API, params=params,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; Brief/0.1)"},
-            timeout=30,
-        )
-        r.raise_for_status()
-        root = ET.fromstring(r.text)
-        return [self._to_project(e) for e in root.findall("atom:entry", ARXIV_NS)]
+        try:
+            r = requests.get(
+                ARXIV_API, params=params,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; Brief/0.1)"},
+                timeout=30,
+            )
+            r.raise_for_status()
+            root = ET.fromstring(r.text)
+            entries = root.findall("atom:entry", ARXIV_NS)
+            print(f"[arxiv] 取到 {len(entries)} 篇(categories={self.categories})")
+            return [self._to_project(e) for e in entries]
+        except Exception as e:
+            print(f"[arxiv] 取数据失败: {e}")
+            return []
 
     @staticmethod
     def _to_project(entry) -> Project:

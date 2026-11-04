@@ -19,7 +19,10 @@ def run(brief_cfg: dict) -> Digest:
     # 1. 取数据(可多源聚合)
     projects: list[Project] = []
     for s in brief_cfg.get("sources", []):
-        projects += _inst(SOURCES, s).fetch()
+        try:
+            projects += _inst(SOURCES, s).fetch()
+        except Exception as e:
+            print(f"[pipeline] source '{s.get('type')}' fetch 失败: {e}")
 
     # 2. 处理器链(过滤 / 去重 / 打分 / 可选 AI)
     for p in brief_cfg.get("processors", []):
